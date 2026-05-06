@@ -1,68 +1,40 @@
 # drift-data-ingest-gate
 
-`drift-data-ingest-gate` is a focused C++ codebase around build a C++ toolkit that studies ingest behavior through round-trip fixtures, with lossless normalization checks and no credentials or hosted services. It is meant to be easy to inspect, run, and extend without a hosted service.
+`drift-data-ingest-gate` keeps a focused C++ implementation around data engineering. The project goal is to build a C++ toolkit that studies ingest behavior through round-trip fixtures, with lossless normalization checks and no credentials or hosted services.
 
-## Drift Data Ingest Gate Walkthrough
+## Why I Keep It Small
 
-I would read the project from the outside in: command, fixture, model, then roadmap. That keeps the data engineering idea grounded in files that can be checked locally.
+This is intentionally local and self-contained so it can be inspected without credentials, services, or seeded history.
 
-## Reason For The Project
+## Drift Data Ingest Gate Review Notes
 
-This is not a wrapper around a service. It is a self-contained project that shows how the model behaves when demand, capacity, latency, risk, and weight move in different directions.
+`stale` and `baseline` are the cases worth reading first. They show the optimistic and cautious ends of the fixture.
 
-## Where Things Live
+## Included Behavior
 
-- `src`: primary implementation
-- `tests`: verification harness
-- `fixtures`: compact golden scenarios
-- `examples`: expanded scenario set
-- `metadata`: project constants and verification metadata
-- `docs`: operations and extension notes
-- `scripts`: local verification and audit commands
+- `fixtures/domain_review.csv` adds cases for schema drift and lineage depth.
+- `metadata/domain-review.json` records the same cases in structured form.
+- `config/review-profile.json` captures the read order and the two review questions.
+- `examples/drift-data-ingest-walkthrough.md` walks through the case spread.
+- The C++ code includes a review path for `schema drift` and `schema drift`.
+- `docs/field-notes.md` explains the strongest and weakest cases.
 
-## Capabilities
+## Internal Model
 
-- Includes extended examples for pipeline state, including `surge` and `degraded`.
-- Documents quality gates tradeoffs in `docs/operations.md`.
-- Runs locally with a single verification command and no external credentials.
-- Stores project constants and verification metadata in `metadata/project.json`.
-- Adds a repository audit script that checks structure before running the language verifier.
+The repository has two validation layers: the original compact policy fixture and the domain review fixture. They are separate so one can change without hiding failures in the other.
 
-## How It Is Put Together
+The C++ implementation avoids hidden state so fixture changes are easy to reason about.
 
-The design is intentionally direct: parse or construct a signal, score it, classify it, and verify the expected branch. This makes the repository useful for studying data engineering behavior without needing a service or database unless the language project itself is SQL. The C++ project uses a small library boundary and a compiled assertion harness.
-
-## Getting It Running
-
-Use a normal shell with C++ available on `PATH`. The verifier is written as a PowerShell script because the portfolio was assembled on Windows.
-
-## Data Notes
-
-`boundary` is the first example I would inspect because it lands on the `review` path with a score of 151. The broader file also keeps `degraded` at -27 and `surge` at 250, which gives the model a useful low-to-high spread.
-
-## Command Examples
+## Try It Locally
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1
 ```
 
-This runs the language-level build or test path against the compact fixture set.
+## Validation
 
-## Check The Work
+The same command runs the local verification path. The highest-scoring domain case is `stale` at 252, which lands in `ship`. The most cautious case is `baseline` at 107, which lands in `watch`.
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/audit.ps1
-```
+## Scope
 
-The audit command checks repository structure and README constraints before it delegates to the verifier.
-
-## Possible Extensions
-
-- Add malformed input fixtures so the failure path is as visible as the happy path.
-- Split the scoring constants into a typed configuration object and validate it before use.
-- Add a comparison mode that shows how decisions change when one signal is adjusted.
-- Add one more data engineering fixture that focuses on a malformed or borderline input.
-
-## Tradeoffs
-
-This code is local-first. It makes no claim about deployed usage and avoids credentials, hosted state, and environment-specific setup.
+No external service is required. A deeper version would add more negative cases and a clearer boundary around invalid input.
